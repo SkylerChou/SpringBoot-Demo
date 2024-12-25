@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class HpPrinter implements Printer {
-    @Value("${count}")
-    private int count;
+//    @Value("${count}")
+//    private int count;
 
 //    @PostConstruct
 //    public void initCount() {
@@ -17,8 +17,8 @@ public class HpPrinter implements Printer {
 
     @Override
     public void print(String message) {
-        count--;
+//        count--;
         System.out.println("HP 列印機: "+message);
-        System.out.println("剩餘使用次數: "+count);
+//        System.out.println("剩餘使用次數: "+count);
     }
 }
