@@ -2,6 +2,7 @@ package org.example.springbootdemo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -34,5 +35,11 @@ public class MyController {
         Student student = new Student();
         student.setName("Judy");
         return student;
+    }
+
+    @RequestMapping("/test1")
+    public String test1(@RequestParam Integer id){
+        // TODO 匹配找到對應的 id 回傳資料
+        return "Judy";
     }
 }
