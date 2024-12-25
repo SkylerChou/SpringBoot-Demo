@@ -15,4 +15,9 @@ public class MyController {
         printer.print("Hello World");
         return "Hello World";
     }
+
+    @RequestMapping("/product")
+    public String product(){
+      return "第一個是蘋果、第二個是橘子";
+    }
 }
