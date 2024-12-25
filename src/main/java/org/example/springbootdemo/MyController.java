@@ -1,10 +1,7 @@
 package org.example.springbootdemo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,5 +46,15 @@ public class MyController {
         System.out.println(student.getId());
         // TODO 更新內容之類的操作
         return "編輯成功 "+student.getName();
+    }
+
+    @RequestMapping("/test3")
+    public String test3(@RequestHeader Integer info){
+        System.out.println(info.equals(123));
+        if (info.equals(123)){
+            return "Success";
+        }else {
+            return "Failed";
+        }
     }
 }
