@@ -57,4 +57,9 @@ public class MyController {
             return "Failed";
         }
     }
+
+    @RequestMapping("/test4/{id}")
+    public String test4(@PathVariable Integer id){
+        return "Hello "+id;
+    }
 }
