@@ -284,3 +284,35 @@ http://localhost:8080/test4/123
 2. `@RequestBody`：接住放在 request body 中的參數
 3. `@RequestHeader`：接住放在 request header 中的參數
 4. `@PathVariable`：取得放在 url 路徑中的值
+
+## 滿足 RESTful API 的三個設計
+
+1. 使用 Http method 來表示動作
+2. 使用 url 路徑描述資源之間的階層關係
+3. response body 返回 json 或是 xml 格式
+
+![img_13.png](img_13.png)
+
+> RESTful API 是指「你所設計的 API 符合 REST 風格」，而 RESTful API 的目的，**就是在「簡化工程師之間的溝通成本**」
+
+### 範例 - CRUD 學生資料
+![img_14.png](img_14.png)
+
+### 常用的 RESTful API 註解
+* @GetMapping
+* @PostMapping
+* @PutMapping
+* @DeleteMapping
+
+## [Http status code 中的分類](https://ithelp.ithome.com.tw/articles/10335795)
+* 1xx：資訊
+* 2xx : 成功
+* 3xx : 重新導向
+* 4xx : 前端請求錯誤
+* 5xx : 後端處理有問題
+
+## 什麼是 Spring JDBC？
+
+
+
+
