@@ -312,7 +312,50 @@ http://localhost:8080/test4/123
 * 5xx : 後端處理有問題
 
 ## 什麼是 Spring JDBC？
+Spring JDBC 的用途，就是讓我們 **「能夠在 Spring Boot 中執行 sql 語法，進而去操作資料庫」**
 
+![img_15.png](img_15.png)
 
+### 補充 1：Spring JDBC 和 Spring Data JPA 的差別在哪裡？
+
+實際上 **「在 Spring Boot 中操作資料庫」** 這件事，是有許多工具可以選擇的，常見的操作資料庫的工具有：
+
+* Spring JDBC
+* MyBatis
+* Spring Data JPA
+* Hibernate
+
+而在這些操作資料庫的工具中，又可以將他們分成兩類：
+1. 在 Spring Boot 中執行 sql 語法，去操作資料庫
+   * 這一類的工具，就是直接在 Spring Boot 中去執行原始的 sql 語法，然後透過這些 sql 語法去存取資料庫的數據這樣
+   * Spring JDBC 和 MyBatis 都屬於這一類
+2. 使用 ORM 的概念，去操作資料庫
+   * 這一類的工具，則是會透過 ORM (Object Relational Mapping) 的概念，去操作資料庫
+   * 所以只要使用這類的工具，基本上就很少寫 sql 語法了，而是會套用另一種新的概念（即是 ORM），去存取資料庫的數據
+   * **Spring Data JPA** 和 **Hibernate** 都屬於這一類
+
+所以回到最一開始的問題「Spring JDBC 和 Spring Data JPA 的差別在哪裡？」的話，就是 **Spring JDBC 是透過執行 sql 語法去操作資料庫，而 Spring Data JPA 則是透過 ORM 的概念去操作資料庫**
+
+## 在 pom.xml 載入 Spring JDBC、資料庫 Driver
+
+如果想要在 Spring Boot 中使用 Spring JDBC 的功能的話，首先會需要在 pom.xml 這個檔案裡面新增以下的程式，將 Spring JDBC 的功能給載入進來
+
+```html
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+```
+除了加入 Spring JDBC 的功能之外，同時也得加入對應的資料庫 driver (驅動程式)，這樣 Spring Boot 後續才能去操作該資料庫
+
+由于此系列文使用的是 MySQL 資料庫，因此大家可以在 pom.xml 檔案裡面，再新增以下的程式，將 MySQL 的 driver 給載入進來
+
+```html
+<dependency>
+  <groupId>com.mysql</groupId>
+  <artifactId>mysql-connector-j</artifactId>
+  <version>8.0.33</version>
+</dependency>
+```
 
 
