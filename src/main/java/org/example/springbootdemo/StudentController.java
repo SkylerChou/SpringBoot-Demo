@@ -1,10 +1,32 @@
 package org.example.springbootdemo;
 
 import org.springframework.aop.framework.AopInfrastructureBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class StudentController {
+    @Autowired
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    @RequestMapping("/students/insert")
+    public String insert(@RequestBody Student student) {
+        String sql = "INSERT INTO student(id, name) VALUES (:studentId, :StudentName)";
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("studentId", student.getId());
+        map.put("StudentName", student.getName());
+
+        namedParameterJdbcTemplate.update(sql, map);
+        return "執行 INSERT sql";
+    }
+
+
+
     // 範例 - CRUD 學生資料 - 可參考教學 => https://ithelp.ithome.com.tw/articles/10335689
 
     // 實作 POST /students

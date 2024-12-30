@@ -358,4 +358,154 @@ Spring JDBC 的用途，就是讓我們 **「能夠在 Spring Boot 中執行 sql
 </dependency>
 ```
 
+## Spring JDBC 根據 sql 分成兩大類：update 和 query
+* 在 update 系列的方法中，可以去執行 INSERT、UPDATE、DELETE 這三種 sql 語法
+* 而在 query 系列的方法中，只能執行 SELECT 這一種 sql 語法
 
+![img_16.png](img_16.png)
+
+### 補充：怎麼背哪個 sql 用哪個方法來執行？
+`update()` 方法，他所代表的是「更新資料庫中的數據」的意思，而以下這三種情境
+* INSERT sql：在資料庫中新增一筆數據
+* UPDATE sql：修改資料庫中已存在的數據
+* DELETE sql：刪除資料庫中的數據
+
+`query()` 方法，他所代表的，則是「查詢資料庫中的數據」的意思，因此他就只會對應到 **SELECT sql**，專門負責去查詢資料庫中的資料
+
+所以在使用 Spring JDBC 去執行 sql 語法時，是不用特別背哪一個 sql 要使用哪一個方法來執行的，只需要從名稱上面去推敲即可！
+
+### update() 的基本用法
+
+#### 步驟一：注入一個 NamedParameterJdbcTemplate
+
+首先第一步，就是在你的 Bean 裡面，先去注入一個 NamedParameterJdbcTemplate 進來
+
+因此我們就可以在 StudentController 裡面，先使用 `@Autowired`，去注入 NamedParameterJdbcTemplate 這個 Bean 進來
+
+```java
+@Autowired
+private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+```
+
+這個 NamedParameterJdbcTemplate 是 Spring JDBC 自動幫我們生成的 Bean，他會負責去處理和資料庫溝通的所有事項，因此我們後續就通通都會透過 NamedParameterJdbcTemplate，去幫我們執行 sql 語法
+
+所以換句話說的話，只要你使用的是 Spring JDBC，那你基本上就都是在跟 NamedParameterJdbcTemplate 打交道，了解他所提供的用法有哪些
+
+#### 步驟二：撰寫 sql 語法
+注入好 NamedParameterJdbcTemplate 進來之後，接著第二步，就是去寫出想要執行的 sql 語法，所以我們就可以去創建一個 String 類型的變數 sql，並且在裡面寫上到時候想要執行的 sql 語法
+
+像是下方就是去寫了一個 INSERT sql 出來，因此到時候 Spring JDBC 就會去執行這一條 sql，在 student table 中插入一筆「id 為 3、並且 name 為 John」的數據
+
+```java
+String sql = "INSERT INTO student(id, name) VALUES (3, 'John')";
+```
+
+#### 步驟三：新增一個 Map<String, object> 的 map 變數
+
+接著第三步，是去新增一個類型為 Map<String, object> 的 map 變數出來，因此可以寫出如下的程式：
+
+```java
+Map<String, Object> map = new HashMap<>();
+```
+
+#### 步驟四：使用 update() 方法
+當前面的步驟都完成之後，最後一步，就是去使用 namedParameterJdbcTemplate 的 `update()` 方法，並且把上面所新增的 sql 和 map 這兩個變數，依照順序的給傳進去
+
+```java
+namedParameterJdbcTemplate.update(sql, map);
+```
+
+只要完成了這四個步驟，到時候當前端請求過來，然後 Spring Boot 運行到第 24 行的 `update()` 方法時，這時候 `update()` 方法就會去執行 sql 參數中所儲存的 sql 語法（即是 `INSERT INTO student(id, name) VALUES (3, 'John')`），在 MySQL 資料庫中插入一筆新的數據了！
+
+### update() 中的 map 參數用法
+**「步驟三：新增一個 `Map<String, object>` 的 map 變數」**，我們當時是先跳過沒有介紹，現在可以回頭來介紹這個 map 變數的用法
+
+這個 map 變數的用途，是去 **「放 sql 語法裡面的變數的值」**，這句話聽起來是有點抽象，所以我們可以直接透過一個例子來看一下 map 變數的用法
+
+### 例子：根據前端的參數，動態的決定 sql 中的值
+在上面那段程式中，我們是直接寫死一條 sql 語法 INSERT INTO student(id, name) VALUES (3, 'John') 在程式裡面，因此不管前端傳了什麼參數過來，我們始終都是只能夠在資料庫中，去新增一筆「id 為 3、並且 name 為 John」的數據
+
+但是這樣子的寫法就非常的不彈性，因為如果我們想要改成是去新增一筆「id 為 4、name 為 Bob」的數據的話，就得停止先 Spring Boot，然後修改程式，然後再重新運行 Spring Boot，就會變得非常麻煩
+
+因此，假設我們想要「動態的決定」當前 sql 語法中的值的話，那就需要依靠 map 這個變數來幫忙了！
+
+### 前置準備
+了解了 map 變數的大概用途之後，我們可以先做一些前置準備，去接住前端傳過來的參數
+
+因此可以先創建一個 Student class 出來，並且在裡面創建兩個變數 id 和 name（和其對應的 getter 和 setter），程式如下：
+
+```java
+public class Student {
+
+    private Integer id;
+    private String name;
+
+    // getter 和 setter
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+```
+
+接著在 **StudentController** 裡，在 `insert()` 方法的參數部分，使用 `@RequestBody`，去接住前端傳過來的參數
+![img_17.png](img_17.png)
+
+### 修改 sql 語法、添加 map 變數中的值
+接住前端所傳遞的變數之後，接著我們就可以來運用 map 變數，將前端所傳過來的 id 和 name 的值，插入一筆數據到資料庫中
+
+這裡有兩個地方要修改：
+
+1. **sql 語法**：將「3 和 John」的地方，改成「`:studentId` 和 `:studentName`」
+2. **map 變數**：在 map 變數中 put 兩組 key-value 的值進去
+
+![img_18.png](img_18.png)
+
+在 Spring JDBC 裡面，只要在 sql 語法中加上了「:」，就表示這是一個「sql 中的變數」
+
+* 譬如說像是 `:studentId`，就表示我們指定這是一個 sql 中的變數，名字叫做 studentId
+* 而又像是 `:studentName`，就表示我們指定這又是另一個 sql 中的變數，名字則是叫做 studentName
+
+因此我們也是可以透過這個邏輯，在同一句 sql 語法裡面，添加無數個 sql 中的變數的，只需要在名字前面加上「:」即可
+
+而在 sql 中的這些 `:studentId`、`:studentName` 變數，他們的值，我們就可以在 map 裡面去做指定
+
+在使用 map 變數時，前面要放的是「sql 變數的名字」，後面放的則是「這個 sql 變數的值是多少」
+
+譬如說我們想要指定 `:studentId` 這個 sql 變數的值是 5 的話，那麼就可以寫成是：
+
+```java
+map.put("studentId", 5);
+```
+又或者是我們想要指定 `:studentId` 這個 sql 變數的值是 10 的話，那麼就可以寫成是：
+
+```java
+map.put("studentId", 10);
+```
+再或者，我們想要指定 `:studentId` 這個 sql 變數的值，是「前端傳過來的 id 的值」的話，那麼就可以寫成是：
+
+```java
+map.put("studentId", student.getId());
+```
+因此我們就可以透過 map 變數，動態的去決定 sql 中的變數的值了！
+
+![img_19.png](img_19.png)
+
+### 小結：update() 方法的用法
+所以總結來說，想要使用 `update()` 方法，去執行 **INSERT、UPDATE、DELETE** 這三種 sql 的話，只要填入以下兩個參數即可：
+
+1. sql 參數：放想要執行的 sql 語法
+2. map 參數：動態的決定 sql 變數中的值
+
+![img_20.png](img_20.png)
