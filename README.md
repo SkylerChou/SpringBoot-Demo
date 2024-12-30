@@ -509,3 +509,57 @@ map.put("studentId", student.getId());
 2. map 參數：動態的決定 sql 變數中的值
 
 ![img_20.png](img_20.png)
+
+## query() 的用法
+
+query() 方法的前兩個參數和 update() 方法一樣，都是先放入「要執行的 sql 語法」，接著是放入「動態決定 sql 變數的 map」
+
+而 query() 方法特別的地方，就在於他的第三個參數 RowMapper
+
+![img_21.png](img_21.png)
+
+### RowMapper 的用途
+在 query() 方法中的第三個參數 RowMapper，他的用途，就是 **「將資料庫查詢出來的數據，轉換成是 Java object」**
+
+像是我們可以創建一個新的 **StudentRowMapper class**，然後讓他去 **implements RowMapper** 這個 interface，實作如下的程式：
+
+```java
+public class StudentRowMapper implements RowMapper<Student> {
+
+    @Override
+    public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Student student = new Student();
+        student.setId(rs.getInt("id"));
+        student.setName(rs.getString("name"));
+        return student;
+    }
+}
+```
+
+### 使用範例
+
+```java
+    @RequestMapping("/students/search")
+    public ResponseEntity<Object> search(@RequestBody Student student) {
+        String sql = "SELECT * FROM student WHERE id = :StudentId AND name = :StudentName";
+        StudentRowMapper studentRowMapper = new StudentRowMapper();
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("StudentName", student.getName());
+        map.put("StudentId", student.getId());
+
+        try {
+            List<Student> students= namedParameterJdbcTemplate.query(sql, map, studentRowMapper);
+            if (students.isEmpty()){
+                return ResponseEntity.status(200).body(Map.of("message", "No students found", "status", "error"));
+            }
+            return ResponseEntity.ok(Map.of("message", "查詢資料庫成功", "data", students, "status", "success"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("message", "Query failed", "error", e.getMessage()));
+        }
+    }
+```
+
+

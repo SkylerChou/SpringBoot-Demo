@@ -1,11 +1,14 @@
 package org.example.springbootdemo;
 
+import org.apache.coyote.Response;
 import org.springframework.aop.framework.AopInfrastructureBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,6 +28,27 @@ public class StudentController {
         return "執行 INSERT sql";
     }
 
+    @RequestMapping("/students/search")
+    public ResponseEntity<Object> search(@RequestBody Student student) {
+        String sql = "SELECT * FROM student WHERE id = :StudentId AND name = :StudentName";
+        StudentRowMapper studentRowMapper = new StudentRowMapper();
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("StudentName", student.getName());
+        map.put("StudentId", student.getId());
+
+        try {
+            List<Student> students= namedParameterJdbcTemplate.query(sql, map, studentRowMapper);
+            if (students.isEmpty()){
+                return ResponseEntity.status(200).body(Map.of("message", "No students found", "status", "error"));
+            }
+            return ResponseEntity.ok(Map.of("message", "查詢資料庫成功", "data", students, "status", "success"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("message", "Query failed", "error", e.getMessage()));
+        }
+    }
 
 
     // 範例 - CRUD 學生資料 - 可參考教學 => https://ithelp.ithome.com.tw/articles/10335689
