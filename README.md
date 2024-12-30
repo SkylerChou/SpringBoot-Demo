@@ -562,4 +562,86 @@ public class StudentRowMapper implements RowMapper<Student> {
     }
 ```
 
+## 什麼是 MVC 架構模式？
+[Medium - MVC、MVP 和 MVVM 三種設計模式的異同](https://medium.com/@yuchinghung890403/mvc-mvp-%E5%92%8C-mvvm-%E4%B8%89%E7%A8%AE%E8%A8%AD%E8%A8%88%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%95%B0%E5%90%8C-ab505b73bc5d)
+
+## Controller-Service-Dao 三層式架構
+在 Controller-Service-Dao 的三層式架構中，其實就是將 Spring Boot 程式，去分成了Controller、Service、以及 Dao 這三層來管理，讓每一層都去負責不同的功能
+
+![img_22.png](img_22.png)
+
+### Controller 層
+**接收前端傳過來的 Http request，並且去驗證請求參數**
+
+所以像是我們在 Spring MVC 中所介紹的那些註解 @RequestMapping、@RequestParam...等等，舉凡是和「前端」進行溝通的部分，就通通會放在 Controller 層裡面
+
+### Service 層
+而當 Controller 層接收到前端傳過來的 Http request、並且對其驗證之後，這時候Controller 就會去 call Service層，讓 Service 負責去接手後續的處理
+
+Service 層的用途，主要是負責 **「商業邏輯的處理」**，而 Service 層在處理商業邏輯的過程中，Service 層會再去 call Dao這一層
+
+### Dao 層
+> 補充：Dao 層是 Data access object 的縮寫
+
+Dao 這一層所負責的功能，就是 **「專門去和資料庫進行溝通的」**，所以換句話說的話，Dao 這一層，就會透過 sql 語法，去操作資料庫，進而去查詢/修改資料庫中的數據
+
+因此我們在 Spring JDBC 中所介紹的所有用法，舉凡只要是和「資料庫」溝通的部分，就通通是會放在 Dao 層裡面
+
+### 實際使用 Controller-Service-Dao 三層式架構
+#### 在使用 Controller-Service-Dao 三層式架構之前...
+將取得前端參數的 `@GetMapping` 功能，以及去和資料庫溝通的 `namedParameterJdbcTemplate` 功能，全部放在同一個 class 中去實作，這樣子雖然同樣可以完成功能，但是在後續的管理和維護上，就會比較吃力
+
+![img_23.png](img_23.png)
+
+#### 使用 Controller-Service-Dao 三層式架構之後！
+![img_24.png](img_24.png)
+
+**Controller 層：StudentController**
+
+![img_25.png](img_25.png)
+
+**Service 層：StudentService**
+
+![img_26.png](img_26.png)
+
+**Dao 層：StudentDao**
+
+![img_27.png](img_27.png)
+
+## 使用 Controller-Service-Dao 三層式架構的注意事項
+
+### 1. 透過 Class 名字結尾，表示這是哪一層 
+    
+像是上面的例子，StudentController 這個 class，因為他是以 Controller 做為結尾，因此在默契上，我們就會將他區分為 Controller 層
+
+又或是 StudentService 這個 class，因為他是以 Service 做為結尾，所以我們就會將他區分為 Service 層
+
+因此大家之後在使用 Controller-Service-Dao 的三層式架構時，就可以透過這個 class 名字的結尾，快速的知道這個 class 是屬於哪一層，進而知道他所負責的功能是「和前端溝通」、「處理商業邏輯」、還是「和資料庫溝通」了
+
+### 2. 將 Controller、Service、Dao，全部變成 Bean
+在設計上，我們通常會將 Controller、Service、Dao 這些 class，全部變成是 Spring 容器所管理的 Bean，然後需要使用的時候，就透過 `@Autowired` 的方式，去注入想要使用的 Bean 進來
+
+譬如說我們會在 StudentController 裡面，使用 @Autowired 去注入 StudentService，這樣就可以在 StudentController 裡面，去 call StudentService 的方法來使用
+
+![img_28.png](img_28.png)
+
+同樣的道理，假設 StudentService 想要使用 StudentDao 的話，那就一樣是可以使用 `@Autowired` 去注入 StudentDao，進而就可以使用 StudentDao 中的方法，去取得資料庫中的數據了
+
+![img_29.png](img_29.png)
+
+### 3. 不能在 Controller 中直接使用 Dao
+在 Controller-Service-Dao 的三層式架構中，各層的分層是很明確的，其中就有一項潛規則，即是「Controller 層不能直接使用 Dao 層」的 class
+
+所以簡單的說的話，Controller 就一定只能去 call Service，再讓 Service 去 call Dao，不能讓 Controller 直接去 call Dao 就對了
+
+![img_30.png](img_30.png)
+
+### 4. Dao 層只能執行 sql 語法，不能添加商業邏輯
+因為 Dao 層的功能，是負責去「和資料庫溝通」的，所以在 Dao 這個 class 裡面，只能夠去執行 sql 語法，去存取資料庫中的數據
+
+所以換句話說的話，就是「不能」在 Dao 層裡面添加商業邏輯的程式
+
+所以像是取得資料庫的數據之後，假設想要進行排序、或是篩選之類的動作，就得回到 Service 層再處理（因為 Service 層是負責商業處理）
+
+因此在 Controller-Service-Dao 的三層式架構裡面，就會盡量保持 Dao 是非常單純的和資料庫溝通，一切複雜的商業邏輯處理，就通通回到 Service 層進行
 
